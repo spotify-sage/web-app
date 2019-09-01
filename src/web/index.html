@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Spotify Sage</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#FFFFFF">
+    <meta name="description" content="URL shortener, focused on ease of use and minimalism">
+
+    <meta property="og:title" content="Spotify Sage">
+    <meta property="og:description" content="URL shortener, focused on ease of use and minimalism">
+    <meta property="og:image" content="https://www.colorcombos.com/images/colors/FFFFFF.png">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.2/css/bootstrap-slider.min.css" integrity="sha256-G3IAYJYIQvZgPksNQDbjvxd/Ca1SfCDFwu2s2lt0oGo=" crossorigin="anonymous">
+    <style>
+      #ex1Slider .slider-selection {
+        background: #BABABA;
+      }
+    </style>
+  </head>
+  <body>
+    <center>
+      <br><br>
+      <h1>Spotify Sage</h1>
+      <h4>Platform made to generate Spotify playlists based on what you listen,
+        <br>to better tailor your music tastes.</h4>
+      <br>
+      <div class="container-fluid">
+        <div class="row justify-content-center align-items-center">
+          <div class="col-4">
+            <div class="card">
+              <div class="card-body">
+                <button type="button" class="auth btn btn-primary">Authenticate</button><br><br><br>
+                <div class="recommended-tracks-form" hidden>
+                  <h3>Create Playlist</h1>
+                  <form>
+                    <p>Number of tracks: </p><input id="ex1" data-slider-id='ex1Slider' type="text" data-slider-min="1" data-slider-max="50" data-slider-step="1" data-slider-value="25"/><br><br>
+                    <button type="button" class="form-button btn btn-primary">Create Playlist</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </center>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.2/bootstrap-slider.min.js" integrity="sha256-oj52qvIP5c7N6lZZoh9z3OYacAIOjsROAcZBHUaJMyw=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+    <script>$(() => {
+      console.log('ready!')
+
+      $.extend({
+        getUrlVars: function(){
+          var vars = [], hash;
+          var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+          for(var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+          }
+          return vars;
+        },
+        getUrlVar: function(name){
+          return $.getUrlVars()[name];
+        }
+      })
+
+      const slider = $('#ex1').slider({
+        formatter: value => {
+          return value === 1 ? `${value} track` : `${value} tracks`
+        }
+      })
+
+      if (!!$.getUrlVar('access_token') && !!$.getUrlVar('refresh_token') ) {
+        localStorage.setItem('access_token', $.getUrlVar('access_token'))
+        localStorage.setItem('refresh_token', $.getUrlVar('refresh_token'))
+        window.location.replace("/")
+      }
+
+      if (!!localStorage.getItem('access_token') && !!localStorage.getItem('refresh_token')) {
+        $('.auth').text('Log Out')
+        $('.recommended-tracks-form').prop('hidden', false)
+      }
+
+      $('.auth').on('click', () => {
+        if (!!localStorage.getItem('access_token') && !!localStorage.getItem('refresh_token')) {
+          console.log('there are auth tokens!!!')
+          localStorage.clear()
+          return window.location.replace("/")
+        } else {
+          console.log('there aren\'t any tho')
+          return window.location.replace('/auth')
+        }
+      })
+
+      $('.fetch-info').on('click', () => {
+        $.ajax(`/user/get-account-information?access_token=${localStorage.getItem('access_token')}`, {
+          contentType: 'application/json'
+        }).then(data => {
+          $('.information').html(`<h1>${data.display_name}</h1>${data.images[0] ? `<img width="100px" height="100px" src="${data.images[0].url}" />`: ''}<br><p>Followers: ${data.followers.total}</p><p>URI: ${data.uri}</p>`)
+          console.log(data)
+        })
+      })
+
+      $('.fetch-player').on('click', () => {
+        $.ajax(`/user/get-account-recent-plays?access_token=${localStorage.getItem('access_token')}`, {
+          contentType: 'application/json'
+        }).then(data => {
+          console.log(data.items.map(i => i.track.artists))
+          $('.played-tracks').html(`<h1>Recently played songs</h1><br>${data.items.map(i => `<p>${i.track.artists.map(a => a.name).join(', ')} - ${i.track.name}</p>`).join('')}`)
+          console.log(data)
+        })
+      })
+
+      $('.fetch-recommended').on('click', () => {
+        $.ajax(`/user/get-recommended-tracks?access_token=${localStorage.getItem('access_token')}`, {
+          contentType: 'application/json'
+        }).then(data => {
+          $('.recommended-tracks-list').html(`<h1>Recommended tracks list</h1><br>${data.items.map(i => `<p>${i.artists.map(a => a.name).join(', ')} - ${i.name}</p>`).join('')}`)
+          console.log(data)
+        })
+      })
+
+      $('.form-button').on('click', () => {
+        console.log(slider.slider('getValue'))
+        Swal.fire({
+          title: 'Creating playlist on Spotify...',
+          onBeforeOpen: () => Swal.showLoading()
+        })
+
+        $.ajax(`/user/create-recommended-playlist?access_token=${localStorage.getItem('access_token')}&limit=${slider.slider('getValue')}`, {
+          contentType: 'application/json'
+        }).then(data => {
+          if (data.ok) {
+            Swal.fire({
+              type: 'success',
+              title: 'Playlist created!',
+              html: `A playlist was created successfully, and can be found by clicking <a href="${data.message}">here</a>!`
+            })
+          } else if (!data.ok) {
+            Swal.fire({
+              type: 'error',
+              title: 'Something went wrong!',
+              html: data.message
+            })
+          }
+        }).catch(err => {
+          Swal.fire({
+            type: 'error',
+            title: 'Something went wrong!',
+            html: `<b>${err.responseJSON.error}</b> - ${err.responseJSON.message}`
+          })
+        })
+      })
+    })</script>
+  </body>
+</html>
