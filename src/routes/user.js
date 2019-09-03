@@ -71,9 +71,9 @@ module.exports = class UserRoute extends Route {
                 'Authorization': `Bearer ${req.query.access_token}`
               },
               body: JSON.stringify({
-                name: `Spotify Guru Playlist`,
+                name: `Spotify Sage Playlist`,
                 public: false,
-                description: `Playlist generated with Spotify Guru's Recommended Playlist functionality on ${moment(Date.now()).format('DD/MM/YYYY [at] hh:mm A')} (${Date.now()})`
+                description: `Playlist generated with Spotify Sage's Recommended Playlist functionality on ${moment(Date.now()).format('DD/MM/YYYY [at] hh:mm A')} (${Date.now()})`
               })
             }).then(res => res.json())
               .then(playlistPayload => {
