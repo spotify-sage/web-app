@@ -22,7 +22,7 @@ module.exports = class AuthRoute extends Route {
   	  	`&scope=${encodeURIComponent(scopes)}` +
         `&state=${crypto.randomBytes(16).toString('hex')}` +
         `&show_dialog=true` +
-  	  	`&redirect_uri=${encodeURIComponent(`${process.env.URL}auth/callback`)}`)
+  	  	`&redirect_uri=${encodeURIComponent(`${process.env.BACKEND_URL}auth/callback`)}`)
   	})
 
   	router.get('/callback', (req, res) => {
@@ -33,7 +33,7 @@ module.exports = class AuthRoute extends Route {
 
         params.append('grant_type', 'authorization_code')
         params.append('code', req.query.code)
-        params.append('redirect_uri', `${process.env.URL}auth/callback`)
+        params.append('redirect_uri', `${process.env.BACKEND_URL}auth/callback`)
 
         fetch('https://accounts.spotify.com/api/token', {
           method: 'POST',
@@ -45,7 +45,7 @@ module.exports = class AuthRoute extends Route {
           .then(json => {
             if (json.error) return res.status(500).json(json)
             else if (json.access_token) {
-              res.redirect(process.env.URL +
+              res.redirect(`${process.env.FRONTEND_URL}auth` +
                 `?access_token=${json.access_token}` +
                 `&refresh_token=${json.refresh_token}` +
                 `&state=${req.query.state}`)

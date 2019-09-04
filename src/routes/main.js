@@ -11,7 +11,7 @@ module.exports = class MainRoute extends Route {
   	const router = Router()
 
   	router.get('/', (req, res) => {
-  	  res.status(200).json({ ok: true, message: 'OK' })
+  	  res.redirect(process.env.FRONTEND_URL)
   	})
 
   	app.use(this.path, router)
