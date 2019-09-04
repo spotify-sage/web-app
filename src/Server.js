@@ -18,10 +18,6 @@ module.exports = class Server {
 
   	this.app.use(express.json()) // Express's JSON parser
     this.app.set('port', port)
-    this.app.use((req, res, next) => {
-      res.setHeader('Access-Control-Allow-Origin', 'http://192.168.8.101:3000')
-      next()
-    })
     // this.app.use(express.static(path.join(__dirname, 'web')))
 
     this.app.listen(port, () => {
