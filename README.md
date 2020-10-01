@@ -1,2 +1,2 @@
-SPOTIFY SAGE
+### Spotify Sage
 https://spotify-sage.paiva.xyz
